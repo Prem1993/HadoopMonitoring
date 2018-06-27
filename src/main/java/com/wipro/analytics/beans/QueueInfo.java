@@ -1,6 +1,9 @@
 package com.wipro.analytics.beans;
 
+import com.wipro.analytics.fetchers.DataFetcherMain;
+
 import java.io.Serializable;
+import java.sql.Timestamp;
 import java.util.List;
 
 /**
@@ -8,7 +11,8 @@ import java.util.List;
  */
 public class QueueInfo implements Serializable {
     private String queueName;
-    private double maxCapacity;
+    private double absoluteAllocatedCapacity;
+    private double absoluteUsedCapacity;
     private int usedMemory;
     private int usedCores;
     private int numContainers;
@@ -19,6 +23,7 @@ public class QueueInfo implements Serializable {
     private int numPendingApplications;
     private String queueType;
     private String users;
+    private Timestamp timestamp;
 
     public int getUsedMemory() {
         return usedMemory;
@@ -36,12 +41,21 @@ public class QueueInfo implements Serializable {
         this.queueName = queueName;
     }
 
-    public double getMaxCapacity() {
-        return maxCapacity;
+
+    public double getAbsoluteUsedCapacity() {
+        return absoluteUsedCapacity;
     }
 
-    public void setMaxCapacity(double maxCapacity) {
-        this.maxCapacity = maxCapacity;
+    public void setAbsoluteUsedCapacity(double absoluteUsedCapacity) {
+        this.absoluteUsedCapacity = absoluteUsedCapacity;
+    }
+
+    public double getAbsoluteAllocatedCapacity() {
+        return absoluteAllocatedCapacity;
+    }
+
+    public void setAbsoluteAllocatedCapacity(double absoluteAllocatedCapacity) {
+        this.absoluteAllocatedCapacity = absoluteAllocatedCapacity;
     }
 
     public int getUsedCores() {
@@ -116,21 +130,33 @@ public class QueueInfo implements Serializable {
         this.users = users;
     }
 
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
     @Override
     public String toString(){
+        String fieldDelimiter= DataFetcherMain.FILE_FIELD_SEPERATOR;
         return
-                queueName+ '\t'
-                + maxCapacity+ '\t'
-                + usedMemory+ '\t'
-                + usedCores+ '\t'
-                + numContainers+ '\t'
-                + queueState+ '\t'
-                + maxApplications+ '\t'
-                + numApplications+ '\t'
-                + numActiveApplications+ '\t'
-                + numPendingApplications+ '\t'
-                + queueType+ '\t'
-                + users;
+                queueName+ fieldDelimiter
+                + absoluteAllocatedCapacity+ fieldDelimiter
+                + absoluteUsedCapacity+ fieldDelimiter
+                + usedMemory+ fieldDelimiter
+                + usedCores+ fieldDelimiter
+                + numContainers+ fieldDelimiter
+                + queueState+ fieldDelimiter
+                + maxApplications+ fieldDelimiter
+                + numApplications+ fieldDelimiter
+                + numActiveApplications+ fieldDelimiter
+                + numPendingApplications+ fieldDelimiter
+                + queueType+ fieldDelimiter
+                + users+ fieldDelimiter
+                + timestamp;
     }
 
 }

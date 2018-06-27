@@ -1,5 +1,6 @@
 package com.wipro.analytics.fetchers;
 
+import com.wipro.analytics.HiveConnection;
 import com.wipro.analytics.beans.RunningJobsInfo;
 import org.codehaus.jackson.JsonNode;
 
@@ -8,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.sql.Timestamp;
+import java.util.Calendar;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
@@ -23,9 +26,16 @@ import org.codehaus.jackson.map.ObjectMapper;
 public class RunningJobsFetcher {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
+    private final static String runningJobsFile = DataFetcherMain.RUNNING_JOBS_FILE;
+    private final static String runningJobsAggregatedDir = DataFetcherMain.RUNNING_JOBS_AGGREGATED_DIR;
+    private final static String resourceManagerHost = DataFetcherMain.RESOURCE_MANAGER_HOST;
+    private final static String resourceManagerPort = DataFetcherMain.RESOURCE_MANAGER_PORT;
+    private static final long scheduleInterval = DataFetcherMain.SCHEDULE_INTERVAL;
+    private static final long aggregationInterval = DataFetcherMain.AGGREGATION_INTERVAL;
+    private static final String lineSeparator = DataFetcherMain.FILE_LINE_SEPERATOR;
+    private static final String runningJobsTable = DataFetcherMain.RUNNING_JOBS_TABLE;
     private static final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
-    private final String runningJobsFile = "/home/cloudera/runningjobs";
-    private final String runningJobsAggregatedFile = "/home/cloudera/runningjobsaggregated";
+
     static int counter = 0;
     static int aggregateCounter =0;
     
@@ -36,10 +46,11 @@ public class RunningJobsFetcher {
     
     public void getAppsData(){
         try {
-            URL runningAppsUrl = new URL("http://localhost:8088/ws/v1/cluster/apps?states=running");
+            URL runningAppsUrl = new URL("http://"+resourceManagerHost+":"+resourceManagerPort+"/ws/v1/cluster/apps?states=running");
             JsonNode rootNode = readJsonNode(runningAppsUrl);
             JsonNode apps = rootNode.path("apps").path("app");
             BufferedWriter writer = new BufferedWriter( new FileWriter(runningJobsFile,true));
+            counter++;
             for (JsonNode app : apps) {
                 String applicationId = app.get("id").asText();
                 String applicationName = app.get("name").asText();
@@ -78,19 +89,31 @@ public class RunningJobsFetcher {
                 runningJobsInfo.setMemorySeconds(memorySeconds);
                 runningJobsInfo.setVcoreSeconds(vcoreSeconds);
 
-                //write this runningjobinfo to file
-
-                writer.write(runningJobsInfo.toString()+"\n");
+                URL appAttemptUrl = new URL("http://"+resourceManagerHost+":"+resourceManagerPort+"/ws/v1/cluster/apps/"+applicationId+"/appattempts");
+                JsonNode appAttemptsArray = readJsonNode(appAttemptUrl).path("appAttempts").path("appAttempt");
+                for(JsonNode appAttempt : appAttemptsArray){
+                    String nodeId = appAttempt.get("nodeId").asText();
+                    String containerId = appAttempt.get("containerId").asText();
+                    runningJobsInfo.setAppMasterNodeId(nodeId);
+                    runningJobsInfo.setAppMasterContainerId(containerId);
+                    runningJobsInfo.setTimestamp(new Timestamp(Calendar.getInstance().getTime().getTime()));
+                    writer.write(runningJobsInfo.toString()+lineSeparator);
+                }
 
             }
             writer.close();
-            System.out.println("counter = " + counter);
-            if(counter == 5){
+            System.out.println("running counter = " + counter);
+            if(counter == aggregationInterval/scheduleInterval){
                 counter = 0;
-                aggregateCounter++;
-                Files.copy(new File(runningJobsFile).toPath(),new File(runningJobsAggregatedFile+aggregateCounter).toPath(), StandardCopyOption.REPLACE_EXISTING);
-                PrintWriter pw = new PrintWriter(runningJobsFile);
-                pw.close();
+                if(new File(runningJobsFile).length() !=0) {
+                    aggregateCounter++;
+                    String fileName=runningJobsAggregatedDir +"running-"+ System.currentTimeMillis();
+                    Files.copy(new File(runningJobsFile).toPath(), new File(fileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                    PrintWriter pw = new PrintWriter(runningJobsFile);
+                    pw.close();
+                    HiveConnection hiveConnection = new HiveConnection();
+                    hiveConnection.loadIntoHive(fileName,runningJobsTable);
+                }
             }
 
         } catch (Exception e) {
@@ -99,8 +122,9 @@ public class RunningJobsFetcher {
         }
     }
     
-    public static void main(String[] args) {
-
+    public static void schedule(long startDelay, long scheduleInterval, TimeUnit timeUnitForSchedule) {
+        DataFetcherMain dataFetcherMain = new DataFetcherMain();
+        dataFetcherMain.init();
           final ScheduledFuture<?> taskHandle = scheduler.scheduleAtFixedRate(
                 new Runnable() {
                     public void run() {
@@ -111,7 +135,7 @@ public class RunningJobsFetcher {
                             ex.printStackTrace(); //or loggger would be better
                         }
                     }
-                }, 0, 20, TimeUnit.SECONDS);
+                }, startDelay, scheduleInterval, timeUnitForSchedule);
     }
 
 }

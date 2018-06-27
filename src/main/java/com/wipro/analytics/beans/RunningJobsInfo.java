@@ -1,6 +1,9 @@
 package com.wipro.analytics.beans;
 
+import com.wipro.analytics.fetchers.DataFetcherMain;
+
 import java.io.Serializable;
+import java.sql.Timestamp;
 
 /**
  * Created by cloudera on 3/19/17.
@@ -23,6 +26,9 @@ public class RunningJobsInfo implements Serializable {
     private int allocatedVCores;
     private long memorySeconds;
     private long vcoreSeconds;
+    private String appMasterNodeId;
+    private String appMasterContainerId;
+    private Timestamp timestamp;
 
 
     public long getVcoreSeconds() {
@@ -161,25 +167,54 @@ public class RunningJobsInfo implements Serializable {
         this.memorySeconds = memorySeconds;
     }
 
+    public String getAppMasterNodeId() {
+        return appMasterNodeId;
+    }
+
+    public void setAppMasterNodeId(String appMasterNodeId) {
+        this.appMasterNodeId = appMasterNodeId;
+    }
+
+    public String getAppMasterContainerId() {
+        return appMasterContainerId;
+    }
+
+    public void setAppMasterContainerId(String appMasterContainerId) {
+        this.appMasterContainerId = appMasterContainerId;
+    }
+
+    public Timestamp getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(Timestamp timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    
     @Override
     public String toString() {
-        return    applicationId + '\t'
-                + applicationName + '\t'
-                + applicationState + '\t'
-                + applicationType + '\t'
-                + finalState + '\t'
-                + progress + '\t'
-                + username + '\t'
-                + queueName + '\t'
-                + startTime + '\t'
-                + elapsedTime + '\t'
-                + finishTime + '\t'
-                + trackingUrl + '\t'
-                + numContainers + '\t'
-                + allocatedMB + '\t'
-                + allocatedVCores + '\t'
-                + memorySeconds + '\t'
-                + vcoreSeconds ;
+        String fieldDelimiter= DataFetcherMain.FILE_FIELD_SEPERATOR;
+        return    applicationId + fieldDelimiter
+                + applicationName + fieldDelimiter
+                + applicationState + fieldDelimiter
+                + applicationType + fieldDelimiter
+                + finalState + fieldDelimiter
+                + progress + fieldDelimiter
+                + username + fieldDelimiter
+                + queueName + fieldDelimiter
+                + startTime + fieldDelimiter
+                + elapsedTime + fieldDelimiter
+                + finishTime + fieldDelimiter
+                + trackingUrl + fieldDelimiter
+                + numContainers + fieldDelimiter
+                + allocatedMB + fieldDelimiter
+                + allocatedVCores + fieldDelimiter
+                + memorySeconds + fieldDelimiter
+                + vcoreSeconds + fieldDelimiter
+                + appMasterNodeId + fieldDelimiter
+                + appMasterContainerId + fieldDelimiter
+                + timestamp;
 
     }
 }
