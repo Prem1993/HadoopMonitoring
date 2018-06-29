@@ -1,9 +1,11 @@
 package com.wipro.analytics.fetchers;
 
+import com.wipro.analytics.Hibernate.HibernateUtil;
 import com.wipro.analytics.HiveConnection;
 import com.wipro.analytics.beans.QueueInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.classic.Session;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -319,15 +321,29 @@ public class QueueFetcher {
                 queueInfoList.clear();
                 getCapacitySchedulerQueue(schedulerInfo);
                 BufferedWriter writer = new BufferedWriter( new FileWriter(queuesFile,true));
+                //Hibernate Code for Session
+                Session session = HibernateUtil.getSessionFactory().openSession();
+
                 //System.out.println("queuinfo list size = " + queueInfoList.size());
                 for(QueueInfo queueInfo: queueInfoList){
                     queueInfo.setTimestamp(new Timestamp(Calendar.getInstance().getTime().getTime()));
-                    writer.write(queueInfo.toString()+lineSeparator);
+                    //writer.write(queueInfo.toString()+lineSeparator);
+                    session.beginTransaction();
+                    Integer id = null;
+                    if (queueInfo!=null)
+                        id= (Integer) session.save(queueInfo);
+                    System.out.println("inserted queue record in database with id is "+id);
+                    session.getTransaction().commit();
                 }
                 writer.close();
+                HibernateUtil.shutdown();
+
                 counter++;
                 System.out.println("queue counter =" + counter);
-                if(counter == aggregationInterval/scheduleInterval){
+                //directly writing data into rdbms instead writing into a file
+                //code not required since now putting the data directly into Mysql
+
+                /*if(counter == aggregationInterval/scheduleInterval){
                     counter = 0;
                     if(new File(queuesFile).length() !=0) {
                         aggregateCounter++;
@@ -338,7 +354,7 @@ public class QueueFetcher {
                         //HiveConnection hiveConnection = new HiveConnection();
                        // hiveConnection.loadIntoHive(fileName,queueTable);
                     }
-                }
+                }*/
 
             }
 

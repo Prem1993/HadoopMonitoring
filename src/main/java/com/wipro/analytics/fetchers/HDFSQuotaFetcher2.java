@@ -100,7 +100,10 @@ public class HDFSQuotaFetcher2 {
             HibernateUtil.shutdown();
             writer.close();
             System.out.println("hdfs quota counter = " + counter);
-            if (counter == aggregationInterval / scheduleInterval) {
+            //directly writing data into rdbms instead writing into a file
+            //code not required since now putting the data directly into Mysql
+
+            /*if (counter == aggregationInterval / scheduleInterval) {
                 counter = 0;
                 if (new File(hdfsQuotaFile).length() != 0) {
                     aggregateCounter++;
@@ -111,7 +114,7 @@ public class HDFSQuotaFetcher2 {
                    // HiveConnection hiveConnection = new HiveConnection();
                    // hiveConnection.loadIntoHive(fileName, hdfsQuotaTable);
                 }
-            }
+            }*/
 
         }catch (Exception e){
             System.out.println("e = " + e);

@@ -2,27 +2,50 @@ package com.wipro.analytics.beans;
 
 import com.wipro.analytics.fetchers.DataFetcherMain;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
 import java.util.List;
 
+import static javax.persistence.GenerationType.IDENTITY;
+
 /**
  * Created by cloudera on 3/19/17.
  */
+@Entity
+@Table(name="QueueInfo")
 public class QueueInfo implements Serializable {
+    @Id
+    @GeneratedValue(strategy=IDENTITY)
+    @Column
+    private int id;
+    @Column
     private String queueName;
+    @Column
     private double absoluteAllocatedCapacity;
+    @Column
     private double absoluteUsedCapacity;
+    @Column
     private int usedMemory;
+    @Column
     private int usedCores;
+    @Column
     private int numContainers;
+    @Column
     private String queueState;
+    @Column
     private int maxApplications;
+    @Column
     private int numApplications;
+    @Column
     private int numActiveApplications;
+    @Column
     private int numPendingApplications;
+    @Column
     private String queueType;
+    @Column
     private String users;
+    @Column
     private Timestamp timestamp;
 
     public int getUsedMemory() {

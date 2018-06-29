@@ -13,6 +13,9 @@
         <property name="hbm2ddl.auto">create</property>
         <mapping class="com.wipro.analytics.beans.FinishedJobsInfo"></mapping>
         <mapping class="com.wipro.analytics.beans.HDFSQuotaInfo2"></mapping>
+        <mapping class="com.wipro.analytics.beans.RunningJobsInfo"></mapping>
+        <mapping class="com.wipro.analytics.beans.MRTaskInfo"></mapping>
+        <mapping class="com.wipro.analytics.beans.QueueInfo"></mapping>
 
 
     </session-factory>

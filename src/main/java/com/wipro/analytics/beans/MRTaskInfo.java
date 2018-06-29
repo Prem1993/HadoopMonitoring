@@ -2,29 +2,56 @@ package com.wipro.analytics.beans;
 
 import com.wipro.analytics.fetchers.DataFetcherMain;
 
+import javax.persistence.*;
 import java.sql.Timestamp;
+
+import static javax.persistence.GenerationType.IDENTITY;
 
 /**
  * Created by cloudera on 4/4/17.
  */
+@Entity
+@Table(name="MRTaskInfo")
 public class MRTaskInfo {
+    @Id
+    @GeneratedValue(strategy=IDENTITY)
+    @Column
+    private int id;
+    @Column
     private String applicationId;
+    @Column
     private String taskId;
+    @Column
     private double taskProgress;
+    @Column
     private String taskState;
+    @Column
     private String taskType;
+    @Column
     private long taskStartTime;
+    @Column
     private long taskFinishTime;
+    @Column
     private long taskElapsedTime;
+    @Column
     private String runningTaskAttemptId;
+    @Column
     private String taskAttemptState;
+    @Column
     private String assignedContainerId;
+    @Column
     private String nodeHttpAddress;
+    @Column
     private String nodeId;
+    @Column
     private String containerState;
+    @Column
     private String containerUsername;
+    @Column
     private long containerTotalMemoryNeededMB;
+    @Column
     private long containerTotalVCoresNeeded;
+    @Column
     private Timestamp timestamp;
 
     public Timestamp getTimestamp() {

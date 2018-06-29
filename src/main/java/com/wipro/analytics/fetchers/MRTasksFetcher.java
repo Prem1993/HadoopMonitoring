@@ -1,9 +1,11 @@
 package com.wipro.analytics.fetchers;
 
+import com.wipro.analytics.Hibernate.HibernateUtil;
 import com.wipro.analytics.HiveConnection;
 import com.wipro.analytics.beans.MRTaskInfo;
 import org.codehaus.jackson.JsonNode;
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.classic.Session;
 
 import java.io.*;
 import java.net.HttpURLConnection;
@@ -44,6 +46,8 @@ public class MRTasksFetcher {
         try {
             counter++;
             BufferedWriter writer = new BufferedWriter( new FileWriter(MRTasksFile,true));
+            //Hibernate Code for Session
+            Session session = HibernateUtil.getSessionFactory().openSession();
 
             URL runningAppsUrl = new URL("http://"+resourceManagerHost+":"+resourceManagerPort+"/ws/v1/cluster/apps?states=running&applicationTypes=MAPREDUCE");
             JsonNode rootNode = readJsonNode(runningAppsUrl);
@@ -112,20 +116,31 @@ public class MRTasksFetcher {
 
                             System.out.println("mrTaskInfo.toString() = " + mrTaskInfo.toString());
 
-                            writer.write(mrTaskInfo.toString() + lineSeparator);
+                           // writer.write(mrTaskInfo.toString() + lineSeparator);
+
+                            session.beginTransaction();
+                            Integer id = null;
+                            if (mrTaskInfo!=null)
+                                id= (Integer) session.save(mrTaskInfo);
+                            System.out.println("inserted MR job record in database with id is "+id);
+                            session.getTransaction().commit();
                            }
                         }
                        }catch (Exception e){
                         System.out.println("Unable to fetch taskattempts and container details as task is not in running state");
+                        session.getTransaction().rollback();
                     }
 
 
                 }
             }
-
+            HibernateUtil.shutdown();
             writer.close();
             System.out.println("mr tasks counter = " + counter);
-            if(counter == aggregationInterval/scheduleInterval){
+            //directly writing data into rdbms instead writing into a file
+            //code not required since now putting the data directly into Mysql
+
+            /*if(counter == aggregationInterval/scheduleInterval){
                 counter = 0;
                 if(new File(MRTasksFile).length() !=0) {
                     aggregateCounter++;
@@ -136,7 +151,7 @@ public class MRTasksFetcher {
                     HiveConnection hiveConnection = new HiveConnection();
                     hiveConnection.loadIntoHive(fileName, MRTasksTable);
                 }
-            }
+            }*/
 
         }catch (Exception e){
             System.out.println("e = " + e);

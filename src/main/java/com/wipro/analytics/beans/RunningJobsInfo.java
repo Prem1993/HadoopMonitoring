@@ -2,32 +2,61 @@ package com.wipro.analytics.beans;
 
 import com.wipro.analytics.fetchers.DataFetcherMain;
 
+import javax.persistence.*;
 import java.io.Serializable;
 import java.sql.Timestamp;
+
+import static javax.persistence.GenerationType.IDENTITY;
 
 /**
  * Created by cloudera on 3/19/17.
  */
+@Entity
+@Table(name="RunningJobsInfo")
 public class RunningJobsInfo implements Serializable {
+    @Id
+    @GeneratedValue(strategy=IDENTITY)
+    @Column
+    private int id;
+    @Column
     private String applicationId;
+    @Column
     private String applicationName;
+    @Column
     private String applicationState;
+    @Column
     private String applicationType;
+    @Column
     private String finalState;
+    @Column
     private String progress;
+    @Column
     private String username;
+    @Column
     private String queueName;
+    @Column
     private long startTime;
+    @Column
     private long elapsedTime;
+    @Column
     private long finishTime;
+    @Column
     private String trackingUrl;
+    @Column
     private int numContainers;
+    @Column
     private int allocatedMB;
+    @Column
     private int allocatedVCores;
+    @Column
     private long memorySeconds;
+    @Column
     private long vcoreSeconds;
+    @Column
     private String appMasterNodeId;
+    @Column
     private String appMasterContainerId;
+    @Column
     private Timestamp timestamp;
 
 

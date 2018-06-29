@@ -255,7 +255,7 @@ public class FinishedJobsFetcher {
 
             writer.close();
             System.out.println("finished counter = " + counter);
-
+            //directly writing data into rdbms instead writing into a file
             //code not required since now putting the data directly into Mysql
 
            /* if(counter == aggregationInterval/scheduleInterval){

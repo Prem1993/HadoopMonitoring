@@ -1,5 +1,6 @@
 package com.wipro.analytics.fetchers;
 
+import com.wipro.analytics.Hibernate.HibernateUtil;
 import com.wipro.analytics.HiveConnection;
 import com.wipro.analytics.beans.RunningJobsInfo;
 import org.codehaus.jackson.JsonNode;
@@ -17,6 +18,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.codehaus.jackson.map.ObjectMapper;
+import org.hibernate.classic.Session;
 
 
 /**
@@ -50,6 +52,9 @@ public class RunningJobsFetcher {
             JsonNode rootNode = readJsonNode(runningAppsUrl);
             JsonNode apps = rootNode.path("apps").path("app");
             BufferedWriter writer = new BufferedWriter( new FileWriter(runningJobsFile,true));
+            //Hibernate Code for Session
+            Session session = HibernateUtil.getSessionFactory().openSession();
+
             counter++;
             for (JsonNode app : apps) {
                 String applicationId = app.get("id").asText();
@@ -97,13 +102,23 @@ public class RunningJobsFetcher {
                     runningJobsInfo.setAppMasterNodeId(nodeId);
                     runningJobsInfo.setAppMasterContainerId(containerId);
                     runningJobsInfo.setTimestamp(new Timestamp(Calendar.getInstance().getTime().getTime()));
-                    writer.write(runningJobsInfo.toString()+lineSeparator);
+                    //writer.write(runningJobsInfo.toString()+lineSeparator);
+                    session.beginTransaction();
+                    Integer id = null;
+                    if (runningJobsInfo!=null)
+                        id= (Integer) session.save(runningJobsInfo);
+                    System.out.println("inserted running job record in database with id is "+id);
+                    session.getTransaction().commit();
                 }
 
             }
+            HibernateUtil.shutdown();
             writer.close();
             System.out.println("running counter = " + counter);
-            if(counter == aggregationInterval/scheduleInterval){
+            //directly writing data into rdbms instead writing into a file
+            //code not required since now putting the data directly into Mysql
+
+            /*if(counter == aggregationInterval/scheduleInterval){
                 counter = 0;
                 if(new File(runningJobsFile).length() !=0) {
                     aggregateCounter++;
@@ -114,7 +129,7 @@ public class RunningJobsFetcher {
                     HiveConnection hiveConnection = new HiveConnection();
                     hiveConnection.loadIntoHive(fileName,runningJobsTable);
                 }
-            }
+            }*/
 
         } catch (Exception e) {
             System.out.println("e = " + e);
