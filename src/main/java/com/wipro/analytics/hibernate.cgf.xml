@@ -10,13 +10,13 @@
         <property name="hibernate.connection.username">root</property>
         <property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
         <property name="show_sql">true</property>
-        <property name="hbm2ddl.auto">create</property>
+        <property name="hbm2ddl.auto">update</property>
         <mapping class="com.wipro.analytics.beans.FinishedJobsInfo"></mapping>
         <mapping class="com.wipro.analytics.beans.HDFSQuotaInfo2"></mapping>
         <mapping class="com.wipro.analytics.beans.RunningJobsInfo"></mapping>
         <mapping class="com.wipro.analytics.beans.MRTaskInfo"></mapping>
         <mapping class="com.wipro.analytics.beans.QueueInfo"></mapping>
-
+        <mapping class="com.wipro.analytics.beans.FinishedWorkflowInfo"></mapping>
 
     </session-factory>
 </hibernate-configuration>
