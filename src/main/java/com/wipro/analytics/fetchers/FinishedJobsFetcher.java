@@ -1,6 +1,7 @@
 package com.wipro.analytics.fetchers;
 
 import com.wipro.analytics.Hibernate.HibernateUtil;
+import com.wipro.analytics.Hibernate.PutJobInfoIntoDB;
 import com.wipro.analytics.HiveConnection;
 import com.wipro.analytics.beans.FinishedJobsInfo;
 import org.codehaus.jackson.JsonNode;
@@ -289,6 +290,9 @@ public class FinishedJobsFetcher {
                         try {
                             FinishedJobsFetcher finishedJobsFetcher = new FinishedJobsFetcher();
                             finishedJobsFetcher.getHistoryAppsData();
+                            System.out.println("collecting data into workflow table");
+                           PutJobInfoIntoDB.main(null);
+
                         }catch(Exception ex) {
                             ex.printStackTrace(); //or loggger would be better
                         }
